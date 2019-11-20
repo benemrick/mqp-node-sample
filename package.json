@@ -1,0 +1,25 @@
+{
+  "name": "mqp-node-sample",
+  "version": "1.0.0",
+  "description": "pqp node error handling sample project",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/benemrick/mqp-node-sample.git"
+  },
+  "keywords": [
+    "node"
+  ],
+  "author": "Ben Emrick",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/benemrick/mqp-node-sample/issues"
+  },
+  "homepage": "https://github.com/benemrick/mqp-node-sample#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
