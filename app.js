@@ -1,7 +1,20 @@
-const express = require('express')
-const app = express()
-const port = 3000
+const express = require('express');
+const app = express();
+const fs = require('fs');
+const convert = require('xml-js');
+const port = 3000;
 
-app.get('/', (req, res) => res.send('Hello World!'))
+app.get('/', function (req, res) {
+  res.sendFile(__dirname + '/index.html');
+});
 
-app.listen(port, () => console.log(`Example app listening on port ${port}!`))
+const options = {compact: true, ignoreComment: true};
+
+app.get('/readXML', function(req, res) {
+  fs.readFile('./data/part.xml', function(err, data) {
+    const xml = convert.xml2json(data, options);
+    res.send(JSON.stringify(xml));
+  });
+});
+
+app.listen(port);
