@@ -17,4 +17,4 @@ app.get('/readXML', function(req, res) {
   });
 });
 
-app.listen(port);
+app.listen(port, () => console.log(`Example app listening on port ${port}!`))
