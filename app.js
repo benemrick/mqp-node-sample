@@ -3,6 +3,7 @@ const app = express();
 const fs = require('fs');
 const convert = require('xml-js');
 const port = 3000;
+const schedule = require('node-schedule');
 
 app.get('/', function (req, res) {
   res.sendFile(__dirname + '/index.html');
@@ -18,3 +19,7 @@ app.get('/readXML', function(req, res) {
 });
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))
+
+var scheduler = schedule.scheduleJob('* * */24 * * *', function(){
+  console.log('Every 24 hours');
+});
