@@ -1,23 +1,37 @@
 const express = require('express');
+const bodyParser = require('body-parser');
 const app = express();
-var http = require('http').createServer(app);
-var io = require('socket.io')(http);
+const http = require('http').createServer(app);
+const io = require('socket.io')(http);
 const EventEmitter = require('events');
 const process = require('process');
-var xml = require('xml');
-
 const fs = require('fs');
-const convert = require('xml-js');
-const port = 3000;
 const schedule = require('node-schedule');
+const request = require('request');
+var parser = require('fast-xml-parser');
+const port = 3000;
 
-app.use(express.static('public'))
+require('body-parser-xml')(bodyParser);
+app.use(bodyParser.xml());
+app.use(express.static('public'));
 
 app.get('/', function (req, res) {
     res.sendFile(__dirname + '/public/index.html');
 });
 
-const options = {compact: true, ignoreComment: true};
+app.get('/socketTest', function (req, res) {
+    res.sendFile(__dirname + '/public/socket.html');
+});
+
+
+/**
+ * Sample XML Files
+ * https://www.w3schools.com/xml/note.xml
+ * https://www.w3schools.com/xml/note_error.xml
+ * https://www.w3schools.com/xml/cd_catalog.xml
+ * https://www.w3schools.com/xml/plant_catalog.xml
+ * https://www.w3schools.com/xml/simple.xml
+ **/
 
 app.get('/readXML', function (req, res) {
     fs.readFile('./data/part.xml', 'utf8', function (err, data) {
@@ -36,8 +50,24 @@ http.listen(3000, function () {
     console.log('listening on *:3000');
 });
 
-// Schedules a job every 2 seconds.
-var scheduler = schedule.scheduleJob('*/2 * * * * *', function () {
+// Schedules a job every 5 seconds.
+var scheduler = schedule.scheduleJob('*/5 * * * * *', function () {
+
+    // Test invalid XML
+    request.get('https://www.w3schools.com/xml/note_error.xml', {}, function (err, res, body) {
+        if (parser.validate(body) !== true) {
+            emitter.emit('xml-error', new Error('Invalid XML file'));
+        }
+    });
+
+
+    // Test valid XML
+    request.get('https://www.w3schools.com/xml/note.xml', {}, function (err, res, body) {
+        if (parser.validate(body) !== true) {
+            emitter.emit('xml-error', new Error('Invalid XML'));
+        }
+    });
+
     io.emit('chat message', "GIVE ME YOUR DATA");
 });
 
@@ -45,15 +75,22 @@ var scheduler = schedule.scheduleJob('*/2 * * * * *', function () {
  * EventEmitter Error Handling
  */
 class Emitter extends EventEmitter {}
+
 const emitter = new Emitter();
 const logger = console;
 
+// Listen for unexpected error
 emitter.on('error', (err) => {
     logger.error('Unexpected error on emitter', err);
 });
 
+// Listen for known XML error
+emitter.on('xml-error', (err) => {
+    logger.error('XML error', err);
+});
+
 // Test the emitter
-emitter.emit('error', new Error('Whoops!'));
+// emitter.emit('error', new Error('Whoops!'));
 
 
 /**
@@ -61,9 +98,7 @@ emitter.emit('error', new Error('Whoops!'));
  */
 process.on('uncaughtException', (err) => {
     logger.log('Whoops! There was an uncaught error', err);
-    // do a graceful shutdown,
-    // close the database connection etc.
-    process.exit(1);
+    // do something
 });
 
 process.on('unhandledRejection', function (reason, promise) {
@@ -71,4 +106,4 @@ process.on('unhandledRejection', function (reason, promise) {
 });
 
 // Test process
-throw new Error('I am uncaught.');
+// throw new Error('I am uncaught.');
