@@ -39,6 +39,14 @@ app.get('/readXML', function (req, res) {
     });
 });
 
+app.post('/sendXML', function (req, res) {
+    // Do something on post
+});
+
+
+/**
+ * Sockets
+ **/
 io.on('connection', function (socket) {
     socket.on('chat message', function (msg) {
         console.log('message: ' + msg);
@@ -49,6 +57,19 @@ io.on('connection', function (socket) {
 http.listen(3000, function () {
     console.log('listening on *:3000');
 });
+
+
+function routineDataCollection(devices){
+    for (let d of Object.keys(devices)){
+        request.get(devices[d], {}, function (err, res, body) {
+            if (parser.validate(body) !== true) {
+                emitter.emit('xml-error', new Error('Invalid XML'));
+            } else {
+                emitter.emit('xml-success', d);
+            }
+        });
+    }
+}
 
 // Schedules a job every 5 seconds.
 var scheduler = schedule.scheduleJob('*/5 * * * * *', function () {
@@ -71,6 +92,15 @@ var scheduler = schedule.scheduleJob('*/5 * * * * *', function () {
             emitter.emit('xml-success', body);
         }
     });
+
+    // Routine collection example
+    // TODO: Event driven way of making sure all three were successes
+    let sampleDevices = {
+        'device1': 'https://www.w3schools.com/xml/cd_catalog.xml',
+        'device2': 'https://www.w3schools.com/xml/plant_catalog.xml',
+        'device3': 'https://www.w3schools.com/xml/plant_catalog.xml'
+    };
+    routineDataCollection(sampleDevices);
 
     io.emit('chat message', "GIVE ME YOUR DATA");
 });
