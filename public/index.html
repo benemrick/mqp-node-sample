@@ -17,13 +17,23 @@
 
         <script>
             const readXML = async function () {
-                try {
-                  const resp = await fetch('/readXML', { method: 'GET' });
-                  const data = await resp.json();
-                  document.getElementById('xmlOutput').innerText = 'XML received\n'+data;
-                } catch (err) {
-                  document.getElementById('xmlOutput').innerText = 'Could not read XML';
-                }
+                fetch('readXML')
+                    .then(
+                        function(response) {
+                            if (response.status !== 200) {
+                                console.log('Looks like there was a problem. Status Code: ' +
+                                    response.status);
+                                return;
+                            }
+
+                            response.text().then(function (text) {
+                                document.getElementById('xmlOutput').innerText = 'XML received\n'+text;
+                            });
+                        }
+                    )
+                    .catch(function(err) {
+                        console.log('Fetch Error :-S', err);
+                    });
             }
         </script>
         <script src="socket.io.js"></script>
