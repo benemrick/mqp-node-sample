@@ -56,7 +56,7 @@ var scheduler = schedule.scheduleJob('*/5 * * * * *', function () {
     // Test invalid XML
     request.get('https://www.w3schools.com/xml/note_error.xml', {}, function (err, res, body) {
         if (parser.validate(body) !== true) {
-            emitter.emit('xml-error', new Error('Invalid XML file'));
+            emitter.emit('xml-error', new Error('Invalid XML file'), res);
         }
     });
 
@@ -74,7 +74,8 @@ var scheduler = schedule.scheduleJob('*/5 * * * * *', function () {
 /**
  * EventEmitter Error Handling
  */
-class Emitter extends EventEmitter {}
+class Emitter extends EventEmitter {
+}
 
 const emitter = new Emitter();
 const logger = console;
@@ -85,8 +86,9 @@ emitter.on('error', (err) => {
 });
 
 // Listen for known XML error
-emitter.on('xml-error', (err) => {
+emitter.on('xml-error', (err, res) => {
     logger.error('XML error', err);
+    logger.error('XML res', res);
 });
 
 // Test the emitter
