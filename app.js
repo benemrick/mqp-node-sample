@@ -56,7 +56,9 @@ var scheduler = schedule.scheduleJob('*/5 * * * * *', function () {
     // Test invalid XML
     request.get('https://www.w3schools.com/xml/note_error.xml', {}, function (err, res, body) {
         if (parser.validate(body) !== true) {
-            emitter.emit('xml-error', new Error('Invalid XML file'), res);
+            emitter.emit('xml-error', new Error('Invalid XML'));
+        } else {
+            emitter.emit('xml-success', body);
         }
     });
 
@@ -65,6 +67,8 @@ var scheduler = schedule.scheduleJob('*/5 * * * * *', function () {
     request.get('https://www.w3schools.com/xml/note.xml', {}, function (err, res, body) {
         if (parser.validate(body) !== true) {
             emitter.emit('xml-error', new Error('Invalid XML'));
+        } else {
+            emitter.emit('xml-success', body);
         }
     });
 
@@ -72,7 +76,7 @@ var scheduler = schedule.scheduleJob('*/5 * * * * *', function () {
 });
 
 /**
- * EventEmitter Error Handling
+ * EventEmitter Event Handling
  */
 class Emitter extends EventEmitter {
 }
@@ -80,15 +84,20 @@ class Emitter extends EventEmitter {
 const emitter = new Emitter();
 const logger = console;
 
-// Listen for unexpected error
+// Listen for unexpected error event
 emitter.on('error', (err) => {
     logger.error('Unexpected error on emitter', err);
 });
 
-// Listen for known XML error
+// Listen for known XML error event
 emitter.on('xml-error', (err, res) => {
     logger.error('XML error', err);
     logger.error('XML res', res);
+});
+
+// Listen for XML success event
+emitter.on('xml-success', (success) => {
+    logger.log('Success!', success);
 });
 
 // Test the emitter
