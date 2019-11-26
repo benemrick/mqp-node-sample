@@ -11,6 +11,15 @@ const request = require('request');
 var parser = require('fast-xml-parser');
 const port = 3000;
 
+
+const theDevices = {
+    'device1': 'https://www.w3schools.com/xml/cd_catalog.xml',
+    'device2': 'https://www.w3schools.com/xml/plant_catalog.xml',
+    'device3': 'https://www.w3schools.com/xml/plant_catalog.xml'
+};
+const NUM_DEVICES = 3;
+var successCount = 0;
+
 require('body-parser-xml')(bodyParser);
 app.use(bodyParser.xml());
 app.use(express.static('public'));
@@ -71,8 +80,8 @@ function routineDataCollection(devices){
     }
 }
 
-// Schedules a job every 5 seconds.
-var scheduler = schedule.scheduleJob('*/5 * * * * *', function () {
+// Schedules a job every 10 seconds
+var scheduler = schedule.scheduleJob('*/10 * * * * *', function () {
 
     // Test invalid XML
     request.get('https://www.w3schools.com/xml/note_error.xml', {}, function (err, res, body) {
@@ -83,24 +92,17 @@ var scheduler = schedule.scheduleJob('*/5 * * * * *', function () {
         }
     });
 
-
     // Test valid XML
-    request.get('https://www.w3schools.com/xml/note.xml', {}, function (err, res, body) {
-        if (parser.validate(body) !== true) {
-            emitter.emit('xml-error', new Error('Invalid XML'));
-        } else {
-            emitter.emit('xml-success', body);
-        }
-    });
+    // request.get('https://www.w3schools.com/xml/note.xml', {}, function (err, res, body) {
+    //     if (parser.validate(body) !== true) {
+    //         emitter.emit('xml-error', new Error('Invalid XML'));
+    //     } else {
+    //         emitter.emit('xml-success', body);
+    //     }
+    // });
 
     // Routine collection example
-    // TODO: Event driven way of making sure all three were successes
-    let sampleDevices = {
-        'device1': 'https://www.w3schools.com/xml/cd_catalog.xml',
-        'device2': 'https://www.w3schools.com/xml/plant_catalog.xml',
-        'device3': 'https://www.w3schools.com/xml/plant_catalog.xml'
-    };
-    routineDataCollection(sampleDevices);
+    routineDataCollection(theDevices);
 
     io.emit('chat message', "GIVE ME YOUR DATA");
 });
@@ -125,9 +127,22 @@ emitter.on('xml-error', (err, res) => {
     logger.error('XML res', res);
 });
 
+// Listen for send-pipeline event
+emitter.on('send-pipeline', (data) => {
+    logger.log("Sending to pipeline...");
+    // Do something
+});
+
 // Listen for XML success event
 emitter.on('xml-success', (success) => {
     logger.log('Success!', success);
+    successCount++;
+
+    if (successCount === NUM_DEVICES){
+        // Got all the data we needed, fire event to send through pipeline
+        emitter.emit('send-pipeline', "consolidate-data placeholder");
+        successCount = 0;
+    }
 });
 
 // Test the emitter
