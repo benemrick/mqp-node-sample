@@ -4,7 +4,7 @@
   "description": "pqp node error handling sample project",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js"
+    "start": "node server-chat.js"
   },
   "repository": {
     "type": "git",
@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/benemrick/mqp-node-sample#readme",
   "dependencies": {
+    "blessed": "^0.1.81",
     "body-parser": "^1.19.0",
     "body-parser-xml": "^1.1.0",
     "events": "^3.0.0",
@@ -31,6 +32,7 @@
     "process": "^0.11.10",
     "request": "^2.88.0",
     "socket.io": "^2.3.0",
+    "ssh2": "^0.8.6",
     "xml": "^1.0.1",
     "xml-js": "^1.6.11"
   }
